@@ -65,15 +65,13 @@ questions:
 
 In Nuxt.js we have 2 ways of getting data from an api. We can use the fetch method or the asyncData method.
 
-## The fetch hook
+- The `asyncData` hook. This hook can only be placed on _page_ components. Unlike `fetch`, this hook does not display a loading placeholder during client-side rendering: instead, this hook blocks route navigation until it is resolved, displaying a page error if it fails.
 
 <base-alert type="info">
 
-This hook is only available for Nuxt `2.12+`.
-
 </base-alert>
 
-The Nuxt.js `fetch` hook is called after the component instance is created on the server-side: `this` is available inside it.
+These hooks can be used with _any data fetching library_ you choose. We recommend using [@nuxt/http](https://http.nuxtjs.org/) or [@nuxt/axios](https://axios.nuxtjs.org/) for making requests to HTTP APIs. More information about these libraries, such as guides for configuring authentication headers, can be found in their respective documentation.
 
 ```js
 export default {
@@ -89,9 +87,10 @@ export default {
 
 </base-alert>
 
-### When to use fetch?
+`fetch` is a hook called during server-side rendering after the component instance is created, and on the client when navigating. The fetch hook should return a promise (whether explicitly, or implicitly using `async/await`) that will be resolved:
 
-Every time you need to get asynchronous data. `fetch` is called on server-side when rendering the route, and on client-side when navigating.
+- On the server before the initial page is rendered
+- On the client some time after the component is mounted
 
 It exposes `$fetchState` at the component level with the following properties:
 
@@ -107,8 +106,8 @@ You also have access to `this.$fetch()`, useful if you want to call the `fetch`
   <p v-else-if="$fetchState.error">An error occured :(</p>
   <div v-else>
     <h1>Nuxt Mountains</h1>
-    <ul v-for="mountain of mountains">
-      <li>{{ mountain.title }}</li>
+    <ul>
+      <li v-for="mountain of mountains">{{ mountain.title }}</li>
     </ul>
     <button @click="$fetch">Refresh</button>
   </div>
@@ -199,9 +198,7 @@ Keeps only 10 page components in memory.
 Nuxt will directly fill  `this.$fetchState.timestamp`  (timestamp) of the last `fetch` call (ssr included). You can use this property combined with `activated` hook to add a 30 seconds cache to `fetch`:
 
 ```html{}[pages/posts/_id.vue]
-<template>
-  ...
-</template>
+<template> ... </template>
 
 <script>
   export default {
@@ -301,6 +298,12 @@ export default {
   }
 </script>
 ```
+
+Unlike `fetch`, the promise returned by the `asyncData` hook is resolved _during route transition_. This means that no "loading placeholder" is visible during client-side transitions (although the [loading bar](https://nuxtjs.org/guides/features/loading/) can be used to indicate a loading state to the user). Nuxt will instead wait for the `asyncData` hook to be finished before navigating to the next page or display the [error page](/guides/directory-structure/layouts#error-page)).
+
+This hook can only be used for page-level components. Unlike `fetch`, `asyncData` cannot access the component instance (`this`). Instead, it receives [the context](/guides/concepts/context-helpers) as its argument. You can use it to fetch some data and Nuxt.js will automatically merge the returned object with the component data.
+
+In the upcoming examples, we are using [@nuxt/http](https://http.nuxtjs.org/) which we recommend for fetching data from an API.
 
 ### Listening to query changes
 

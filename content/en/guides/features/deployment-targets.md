@@ -32,7 +32,7 @@ As Nuxt.js also works as a static site generator you can therefore generate your
 
 <base-alert type="info">
 
-Static sites work with [universal mode](https://nuxtjs.org/guides/features/rendering-modes#universal) which is the default mode.
+Dynamic routes are also generated thanks to the [Nuxt Crawler](/guides/configuration-glossary/configuration-generate#crawler)
 
 </base-alert>
 
